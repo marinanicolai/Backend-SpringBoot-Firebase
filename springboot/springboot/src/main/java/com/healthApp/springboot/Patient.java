@@ -22,7 +22,6 @@ public class Patient {
     private List<String> dailyOccurrence;
     private Integer dailyDosageCount;
     private String medicineName;
-
     private String fcmToken; // Add the FCM token field
 
     // ... other methods ...
@@ -62,10 +61,6 @@ public class Patient {
         this.dailyOccurrence = dailyOccurrence;
     }
 
-//    public void setMedicineDuration(Integer medicineDuration) {
-//        this.medicineDuration = medicineDuration;
-//    }
-
     public void setDailyDosageCount(Integer dailyDosageCount) {
         this.dailyDosageCount = dailyDosageCount;
     }
@@ -94,10 +89,6 @@ public class Patient {
         return dailyOccurrence;
     }
 
-//    public Integer getMedicineDuration() {
-//        return medicineDuration;
-//    }
-
     public Integer getDailyDosageCount() {
         return dailyDosageCount;
     }
@@ -118,7 +109,6 @@ public class Patient {
     @Override
     public String toString() {
         return "Patient{" +
-                "document_user_id='" + document_user_id + '\'' +
                 ", name='" + name + '\'' +
                 ", age=" + age +
                 ", dob='" + dob + '\'' +
@@ -126,7 +116,7 @@ public class Patient {
                 ", dailyOccurrence=" + dailyOccurrence +
                 ", dailyDosageCount=" + dailyDosageCount +
                 ", medicineName='" + medicineName + '\'' +
-                ", fcmToken='" + fcmToken + '\'' +
+                ", user_id='" + user_id + '\'' +
                 '}';
     }
 }

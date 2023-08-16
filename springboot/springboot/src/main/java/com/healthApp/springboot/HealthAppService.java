@@ -3,6 +3,9 @@ package com.healthApp.springboot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -200,10 +203,10 @@ public class HealthAppService {
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//    @Scheduled(fixedRate = 60000) // Run every minute
-//    public void scheduleNotifications() {
-//        sendNotifications();
-//    }
+    @Scheduled(fixedRate = 60000) // Run every minute
+    public void scheduleNotifications() {
+        sendNotifications();
+    }
 
     private void sendNotifications() {
         Firestore dbFirestore = FirestoreClient.getFirestore();
@@ -216,9 +219,7 @@ public class HealthAppService {
                 Patient patient = document.toObject(Patient.class);
                 System.out.println(patient);
                 // Check if conditions for sending notification are met
-                if (conditionsMet(patient)) {
-                    sendNotificationToUser(patient);
-                }
+                conditionsMet(patient);
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -228,7 +229,7 @@ public class HealthAppService {
 
     // ... other methods ...
 
-    private boolean conditionsMet(Patient patient) {
+    private void conditionsMet(Patient patient) {
         // Implement your logic to check conditions
         LocalTime currentTime = LocalTime.now();
 
@@ -260,24 +261,54 @@ public class HealthAppService {
         }
         for(int i=0;i<patient.getDailyOccurrence().toArray().length;i++){
             System.out.println("Daily Occurance"+patient.getDailyOccurrence().toArray()[i]);
-            if(formattedTime.equals(patient.getDailyOccurrence().toArray()[i]))
+            if(formattedTime.equals(patient.getDailyOccurrence().toArray()[i]) && isAfterOrEqual) {
                 System.out.println("case match");
+                sendNotificationToUser(patient);
+            }
         }
         System.out.println("Time"+formattedTime);
-        return true;
     }
-
     private void sendNotificationToUser(Patient patient) {
         // Get the user's FCM token from the patient object (if available)
-        String fcmToken = patient.getFcmToken();
-        System.out.println("FCM Token"+fcmToken);
-        System.out.println("In the Send Notification");
-        if (fcmToken != null && !fcmToken.isEmpty()) {
-            // Construct and send the notification using your NotificationService
-            String title = "Notification Title";
-            String body = "Notification Body";
-            notificationService.sendNotificationToUser(fcmToken, title, body);
+        try {
+            Firestore dbFirestore = FirestoreClient.getFirestore();
+            System.out.println("Matched User Id" + patient.getUser_id());
+            DocumentReference documentReference = dbFirestore.collection("fcmToken").document(patient.getUser_id());
+            ApiFuture<DocumentSnapshot> future = documentReference.get();
+            DocumentSnapshot document = future.get();
+            User user = document.toObject(User.class);
+            System.out.println(user);
+            String fcmToken = user.getFcmToken();
+            System.out.println("FCM Token" + fcmToken);
+            System.out.println("In the Send Notification");
+            if (fcmToken != null && !fcmToken.isEmpty()) {
+                // Construct and send the notification using your NotificationService
+                try {
+                    // See documentation on defining a message payload.
+                    Message message = Message.builder()
+                            .putData("Title", "Medicine Reminder")
+                            .putData("Message", "Please take your Medicine: "+patient.getMedicineName()+" Dosage")
+                            .setToken(fcmToken)
+                            .build();
+
+                        // Send a message to the device corresponding to the provided
+                        // registration token.
+                    String response = FirebaseMessaging.getInstance().send(message);
+                    // Response is a message ID string.
+                    System.out.println("Successfully sent message: " + response);
+
+                }
+                catch (FirebaseMessagingException e) {
+                    throw new RuntimeException(e);
+                }
+
+//                notificationService.sendNotificationToUser(fcmToken, title, body);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            // Handle exception if needed
         }
     }
+
 
 }
