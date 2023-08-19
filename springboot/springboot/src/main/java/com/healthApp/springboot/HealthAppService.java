@@ -27,8 +27,6 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class HealthAppService {
-    @Autowired
-    private NotificationService notificationService; // Inject the NotificationService
     public ResponseEntity<String> createPatient(@RequestBody Patient patient) throws InterruptedException, ExecutionException{
         Firestore dbFirestore = FirestoreClient.getFirestore();
 
@@ -287,7 +285,7 @@ public class HealthAppService {
                     // See documentation on defining a message payload.
                     Message message = Message.builder()
                             .putData("Title", "Medicine Reminder")
-                            .putData("Message", "Please take your Medicine: "+patient.getMedicineName()+" Dosage")
+                            .putData("Message", patient.getName().toUpperCase() +"," +"Please take your Medicine: "+patient.getMedicineName())
                             .setToken(fcmToken)
                             .build();
 

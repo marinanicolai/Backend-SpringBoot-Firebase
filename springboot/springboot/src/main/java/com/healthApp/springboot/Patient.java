@@ -2,7 +2,6 @@ package com.healthApp.springboot;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.cloud.Timestamp;
-import com.healthApp.springboot.TimestampDeserializer;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.cglib.core.Local;
@@ -22,7 +21,6 @@ public class Patient {
     private List<String> dailyOccurrence;
     private Integer dailyDosageCount;
     private String medicineName;
-    private String fcmToken; // Add the FCM token field
 
     // ... other methods ...
 
@@ -34,13 +32,6 @@ public class Patient {
         return user_id;
     }
 
-    public String getFcmToken() {
-        return fcmToken;
-    }
-
-    public void setFcmToken(String fcmToken) {
-        this.fcmToken = fcmToken;
-    }
     public void setName(String name) {
         this.name = name;
     }
